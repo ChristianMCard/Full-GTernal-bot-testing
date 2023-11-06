@@ -35,7 +35,7 @@ class GTernal
     bool checkCharging(); // Returns true if the battery is currently charging
     float checkBattVoltage(); // Reads and returns the current battery voltage
 
-    const char* measureDistances(); // Read and store the sensor distances in an array [S1, S2, S3, S4, S5] and return to be used
+    void measureDistances(JsonArray& array); // Read and store the sensor distances in an array [S1, S2, S3, S4, S5] and return to be used
 
     void encoderPositionUpdate(float timeStep); //Encoders used for state estimates.
     void setGlobalPosition(float x, float y, float a); // Set the global state of the robot.

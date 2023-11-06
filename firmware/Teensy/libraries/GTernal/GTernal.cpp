@@ -4,6 +4,7 @@ Adafruit_INA260 ina260 = Adafruit_INA260();
 
 #define DEV_I2C Wire
 #define SerialPort Serial
+
 VL53L4CD sensor_vl53l4cd_sat(&DEV_I2C, A1);
 int NUMBER_OF_SENSORS = 5;  // Number of VL53L4CD sensors on GTernal
 
@@ -66,8 +67,8 @@ void GTernal::SETUP(){
   // VL53L4CD Setup
   ///////////////////////////////////////////////////////////
   // Initialize serial for output.
-  SerialPort.begin(115200);
-  SerialPort.println("Starting...");
+   Serial.begin(500000);
+   Serial.println("Starting...");
 
   // Initialize I2C bus.
   DEV_I2C.begin();
@@ -154,6 +155,13 @@ void GTernal::jsonSerialRead(){
     JsonArray& statusArray = jsonOut.createNestedArray("status");
     JsonArray& bodyArray = jsonOut.createNestedArray("body");
     JsonArray& requestArray = jsonIn["request"];
+
+    // JsonObject& jsonInTest = _jsonBufferIn.createObject(); // For debug
+    // JsonArray& requestArray = jsonInTest.createNestedArray("request");  // For debug
+    // JsonArray& ifaceArray = jsonInTest.createNestedArray("iface");  // For debug
+    // requestArray.add("read"); // For debug
+    // ifaceArray.add("distances"); // For debug
+
     JsonArray& ifaceArray = jsonIn["iface"];
     int requestArraySize = requestArray.size();//Same number of requests as iface.
     for(int i=0;i<requestArraySize;i++){
@@ -191,7 +199,8 @@ void GTernal::jsonSerialRead(){
           } 
           else if (strcmp(ifaceStr,"distances") == 0){
             statusArray.add(1);
-            body["distances"] = measureDistances();
+            JsonArray& distanceArray = body.createNestedArray("distances");
+            measureDistances(distanceArray);
           } 
           break;
         }
@@ -223,8 +232,9 @@ void GTernal::jsonSerialRead(){
     if(Serial3.availableForWrite() >= jsonOut.size()+1){
       jsonOut.printTo(Serial3);
       //jsonOut.printTo(Serial); // For debugging
+      //Serial.println("\n"); // For debugging
       //Serial.println(jsonOut.size()); // For debugging
-      //SerialPort.print(&jsonOut);
+      //SerialPort.print(jsonOut.size());
       //jsonOut.printTo(SerialPort); // For debugging
       _jsonBufferOut.clear();
     }
@@ -339,9 +349,9 @@ void GTernal::getEncoderCounts(int encoderData[]){
   encoderData[1] = _encoderCountR;
 }
 
-const char* GTernal::measureDistances(){
+void GTernal::measureDistances(JsonArray& outputArray){
   array<VL53L4CD_Result_t, 5> sensorOutputs;
-  string distances;
+  //string distances;
   
   uint8_t NewDataReady = 0;
 
@@ -358,16 +368,17 @@ const char* GTernal::measureDistances(){
       sensor_vl53l4cd_sat.VL53L4CD_ClearInterrupt();
       // Read measured distance. RangeStatus = 0 means valid data
       sensor_vl53l4cd_sat.VL53L4CD_GetResult(&sensorOutputs[x-1]);
+      outputArray.add(sensorOutputs[x-1].distance_mm);
   }
 
   // Store distances in string to be returned as a const char*
-  distances = "[" + std::to_string(static_cast<int>(sensorOutputs[0].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[1].distance_mm)) + ","
-                  + std::to_string(static_cast<int>(sensorOutputs[2].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[3].distance_mm)) + ","
-                  + std::to_string(static_cast<int>(sensorOutputs[4].distance_mm)) + "]";
+  // distances = "[" + std::to_string(static_cast<int>(sensorOutputs[0].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[1].distance_mm)) + ","
+  //                 + std::to_string(static_cast<int>(sensorOutputs[2].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[3].distance_mm)) + ","
+  //                 + std::to_string(static_cast<int>(sensorOutputs[4].distance_mm)) + "]";
 
-  const char* result = distances.c_str();
+  // const char* result = distances.c_str();
 
-  return result;
+  //return result;
 }
 
 ///////////////////////////////////////////////////////////
