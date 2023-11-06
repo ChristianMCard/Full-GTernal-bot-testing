@@ -2,20 +2,6 @@
 
 Adafruit_INA260 ina260 = Adafruit_INA260();
 
-#define DEV_I2C Wire
-#define SerialPort Serial
-
-VL53L4CD sensor_vl53l4cd_sat(&DEV_I2C, A1);
-int NUMBER_OF_SENSORS = 5;  // Number of VL53L4CD sensors on GTernal
-
-// Mux selection function for VL53L4CD sensors
-void enableMuxPort(uint8_t port){
-  Wire.beginTransmission(0x70); //select the mux
-  Wire.write(1 << port);        //send bit to select bus
-  Wire.endTransmission();
-}
-
-
 GTernal::GTernal():_motorLeft(_interruptL1, _interruptL2),_motorRight(_interruptR1, _interruptR2), \
 _strip(2,10,NEO_GRB + NEO_KHZ800){
 
@@ -61,32 +47,6 @@ void GTernal::SETUP(){
   {
     Serial.print("Ooops, no INA260 detected ... Check your wiring or I2C ADDR!");
     while (1);
-  }
-
-  ///////////////////////////////////////////////////////////
-  // VL53L4CD Setup
-  ///////////////////////////////////////////////////////////
-  // Initialize serial for output.
-   Serial.begin(500000);
-   Serial.println("Starting...");
-
-  // Initialize I2C bus.
-  DEV_I2C.begin();
-
-  // Configure VL53L4CD satellite component.
-  for (byte x = 1 ; x <= NUMBER_OF_SENSORS ; x++)
-  {
-    enableMuxPort(x); //Tell mux to connect to port X
-    sensor_vl53l4cd_sat.begin();
-    // Switch off VL53L4CD satellite component.
-    sensor_vl53l4cd_sat.VL53L4CD_Off();
-    //Initialize VL53L4CD satellite component.
-    sensor_vl53l4cd_sat.InitSensor();
-    // Program the highest possible TimingBudget, without enabling the
-    // low power mode. This should give the best accuracy
-    sensor_vl53l4cd_sat.VL53L4CD_SetRangeTiming(200, 0);
-    // Start Measurements
-    sensor_vl53l4cd_sat.VL53L4CD_StartRanging();
   }
 
   ///////////////////////////////////////////////////////////
@@ -155,13 +115,6 @@ void GTernal::jsonSerialRead(){
     JsonArray& statusArray = jsonOut.createNestedArray("status");
     JsonArray& bodyArray = jsonOut.createNestedArray("body");
     JsonArray& requestArray = jsonIn["request"];
-
-    // JsonObject& jsonInTest = _jsonBufferIn.createObject(); // For debug
-    // JsonArray& requestArray = jsonInTest.createNestedArray("request");  // For debug
-    // JsonArray& ifaceArray = jsonInTest.createNestedArray("iface");  // For debug
-    // requestArray.add("read"); // For debug
-    // ifaceArray.add("distances"); // For debug
-
     JsonArray& ifaceArray = jsonIn["iface"];
     int requestArraySize = requestArray.size();//Same number of requests as iface.
     for(int i=0;i<requestArraySize;i++){
@@ -197,11 +150,6 @@ void GTernal::jsonSerialRead(){
             statusArray.add(1);
             body["power"] = ina260.readPower();
           } 
-          else if (strcmp(ifaceStr,"distances") == 0){
-            statusArray.add(1);
-            JsonArray& distanceArray = body.createNestedArray("distances");
-            measureDistances(distanceArray);
-          } 
           break;
         }
         case 1://write
@@ -231,11 +179,8 @@ void GTernal::jsonSerialRead(){
     }
     if(Serial3.availableForWrite() >= jsonOut.size()+1){
       jsonOut.printTo(Serial3);
-      //jsonOut.printTo(Serial); // For debugging
-      //Serial.println("\n"); // For debugging
-      //Serial.println(jsonOut.size()); // For debugging
-      //SerialPort.print(jsonOut.size());
-      //jsonOut.printTo(SerialPort); // For debugging
+      // jsonOut.printTo(Serial); // For debugging
+      // Serial.println(jsonOut.size()); // For debugging
       _jsonBufferOut.clear();
     }
     _jsonBufferIn.clear();
@@ -347,38 +292,6 @@ void GTernal::getEncoderCounts(int encoderData[]){
   _readEncoders();
   encoderData[0] = _encoderCountL;
   encoderData[1] = _encoderCountR;
-}
-
-void GTernal::measureDistances(JsonArray& outputArray){
-  array<VL53L4CD_Result_t, 5> sensorOutputs;
-  //string distances;
-  
-  uint8_t NewDataReady = 0;
-
-  while (!NewDataReady){
-    for(byte x = 1 ; x <= NUMBER_OF_SENSORS ; x++){
-      enableMuxPort(x);
-      sensor_vl53l4cd_sat.VL53L4CD_CheckForDataReady(&NewDataReady);
-    }
-  }
-
-  for(byte x = 1 ; x <= NUMBER_OF_SENSORS ; x++){
-      // (Mandatory) Clear HW interrupt to restart measurements
-      enableMuxPort(x); //Tell mux to connect to port X
-      sensor_vl53l4cd_sat.VL53L4CD_ClearInterrupt();
-      // Read measured distance. RangeStatus = 0 means valid data
-      sensor_vl53l4cd_sat.VL53L4CD_GetResult(&sensorOutputs[x-1]);
-      outputArray.add(sensorOutputs[x-1].distance_mm);
-  }
-
-  // Store distances in string to be returned as a const char*
-  // distances = "[" + std::to_string(static_cast<int>(sensorOutputs[0].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[1].distance_mm)) + ","
-  //                 + std::to_string(static_cast<int>(sensorOutputs[2].distance_mm)) + "," + std::to_string(static_cast<int>(sensorOutputs[3].distance_mm)) + ","
-  //                 + std::to_string(static_cast<int>(sensorOutputs[4].distance_mm)) + "]";
-
-  // const char* result = distances.c_str();
-
-  //return result;
 }
 
 ///////////////////////////////////////////////////////////

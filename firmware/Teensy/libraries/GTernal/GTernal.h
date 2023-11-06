@@ -6,11 +6,7 @@
 #include "ArduinoJson.h"
 #include "Adafruit_NeoPixel.h"
 #include <Adafruit_INA260.h>
-#include <vl53l4cd_class.h>
-#include <Wire.h>
-#include <string>
-#include <array>
-using namespace std;
+
 
 class GTernal
 {
@@ -34,8 +30,6 @@ class GTernal
     void getEncoderCounts(int encoderData[]); // Read and store the encoders tick counts in the argument array [Left, Right]
     bool checkCharging(); // Returns true if the battery is currently charging
     float checkBattVoltage(); // Reads and returns the current battery voltage
-
-    void measureDistances(JsonArray& array); // Read and store the sensor distances in an array [S1, S2, S3, S4, S5] and return to be used
 
     void encoderPositionUpdate(float timeStep); //Encoders used for state estimates.
     void setGlobalPosition(float x, float y, float a); // Set the global state of the robot.
