@@ -270,7 +270,7 @@ def main():
             handlers.append(lambda status, body: handle_read_response('bus_volt', status, body))
             handlers.append(lambda status, body: handle_read_response('bus_current', status, body))
             handlers.append(lambda status, body: handle_read_response('power', status, body))
-            handlers.append(lambda status, body: handle_read_response('distances', status, body))
+            #handlers.append(lambda status, body: handle_read_response('distances', status, body))
 
             status_update_time = start_time
 
