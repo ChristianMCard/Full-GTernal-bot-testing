@@ -263,7 +263,7 @@ def main():
         # Retrieve status data: battery voltage and charging status
         if((start_time - status_update_time) >= status_update_rate):
             request.add_read_request('batt_volt').add_read_request('charge_status')
-            request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power').add_read_request('distances')
+            request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power')
             #request.add_read_request('distances')
             handlers.append(lambda status, body: handle_read_response('batt_volt', status, body))
             handlers.append(lambda status, body: handle_read_response('charge_status', status, body))
