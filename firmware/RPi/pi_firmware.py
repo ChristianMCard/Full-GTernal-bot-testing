@@ -274,6 +274,8 @@ def main():
 
             status_update_time = start_time
 
+        logger.info('Length of requests ({})'.format(len(request)))
+
         # Process input commands
         input_msg = None
         # Make sure that the queue has few enough messages
