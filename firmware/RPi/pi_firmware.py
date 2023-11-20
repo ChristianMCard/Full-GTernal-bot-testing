@@ -274,8 +274,6 @@ def main():
 
             status_update_time = start_time
 
-        logger.info('Length of requests ({})'.format((request)))
-
         # Process input commands
         input_msg = None
         # Make sure that the queue has few enough messages
@@ -326,7 +324,7 @@ def main():
         # Call handlers
         # We'll have a status and body for each request
         if(response is not None and 'status' in response and 'body' in response
-           and len(response['status']) == len(handlers) and len(response['body']) == len(handlers)):
+           and len(response['body']) == len(handlers)):
             status = response['status']
             body = response['body']
             # Ensure the appropriate handler gets each response
