@@ -338,6 +338,8 @@ def main():
             if(len(handlers) > 0):
                 logger.critical('Malformed response ({})'.format(response))
                 logger.info('Length of handlers ({})'.format(len(handlers)))
+                logger.info('Length of requests ({})'.format(len(request.request)))
+                logger.info('Length of iface ({})'.format(len(request.iface)))
 
         robot_node.put(status_link, json.dumps(status_data))
 
