@@ -274,7 +274,7 @@ def main():
 
             status_update_time = start_time
 
-        logger.info('Length of requests ({})'.format(len(request)))
+        logger.info('Length of requests ({})'.format((request)))
 
         # Process input commands
         input_msg = None
