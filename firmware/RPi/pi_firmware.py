@@ -261,7 +261,8 @@ def main():
         handlers = []
 
         # Retrieve status data: battery voltage and charging status
-        if((start_time - status_update_time) >= status_update_rate):
+        #  (start_time - status_update_time) >= status_update_rate
+        if(1):
             request.add_read_request('batt_volt').add_read_request('charge_status')
             request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power')
             request.add_read_request('distances')
