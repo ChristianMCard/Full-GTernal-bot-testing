@@ -264,13 +264,14 @@ def main():
         if((start_time - status_update_time) >= status_update_rate):
             request.add_read_request('batt_volt').add_read_request('charge_status')
             request.add_read_request('bus_volt').add_read_request('bus_current').add_read_request('power')
-            request.add_read_request('distances')
+            request.add_read_request('distances').add_read_request('orientation')
             handlers.append(lambda status, body: handle_read_response('batt_volt', status, body))
             handlers.append(lambda status, body: handle_read_response('charge_status', status, body))
             handlers.append(lambda status, body: handle_read_response('bus_volt', status, body))
             handlers.append(lambda status, body: handle_read_response('bus_current', status, body))
             handlers.append(lambda status, body: handle_read_response('power', status, body))
             handlers.append(lambda status, body: handle_read_response('distances', status, body))
+            handlers.append(lambda status, body: handle_read_response('orientation', status, body))
 
             status_update_time = start_time
 
